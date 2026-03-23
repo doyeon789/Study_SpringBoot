@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>CRUD 연습</title>
+    <style>
+        body { font-family: Arial; margin: 40px; }
+        input { margin: 5px; }
+        button { margin: 5px; }
+    </style>
+</head>
+<body>
+
+<h2>📋 CRUD 연습</h2>
+
+<!-- 입력 -->
+<input type="text" id="title" placeholder="제목">
+<input type="text" id="content" placeholder="내용">
+<button onclick="createItem()">추가</button>
+
+<hr>
+
+<!-- 목록 -->
+<ul id="list"></ul>
+
+<script>
+    const API = "/api/items";
+
+    // 전체 조회
+    function loadItems() {
+        fetch(API)
+            .then(res => res.json())
+            .then(data => {
+                const list = document.getElementById("list");
+                list.innerHTML = "";
+
+                data.forEach(item => {
+                    const li = document.createElement("li");
+
+                    li.innerHTML = `
+                        ${item.id} | ${item.title} | ${item.content}
+                        <button onclick="deleteItem(${item.id})">삭제</button>
+                        <button onclick="editItem(${item.id}, '${item.title}', '${item.content}')">수정</button>
+                    `;
+
+                    list.appendChild(li);
+                });
+            });
+    }
+
+    // 생성
+    function createItem() {
+        const title = document.getElementById("title").value;
+        const content = document.getElementById("content").value;
+
+        fetch(API, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content })
+        }).then(() => loadItems());
+    }
+
+    // 삭제
+    function deleteItem(id) {
+        fetch(`${API}/${id}`, {
+            method: "DELETE"
+        }).then(() => loadItems());
+    }
+
+    // 수정
+    function editItem(id, oldTitle, oldContent) {
+        const title = prompt("제목 수정", oldTitle);
+        const content = prompt("내용 수정", oldContent);
+
+        fetch(`${API}/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content })
+        }).then(() => loadItems());
+    }
+
+    // 처음 실행
+    loadItems();
+</script>
+
+</body>
+</html>
